@@ -17,4 +17,5 @@ All figures displayed in this README are based on this synthetic vector field an
 
 
 
-<img width="1272" height="409" alt="fig1" src="https://github.com/user-attachments/assets/7de22911-f5a6-4237-89cc-bde946212ce1" />
+<img width="2650" height="853" alt="fig1" src="https://github.com/user-attachments/assets/9b6636c2-90f3-4c3d-8a3c-6436da4d1c03" />
+
