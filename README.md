@@ -15,6 +15,6 @@ The framework requires user-provided spatially binned average velocity matrices 
 An artificially generated vector field is included in this repository to illustrate the complete workflow. 
 All figures displayed in this README are based on this synthetic vector field and are intended for illustrative purposes only.
 
-![vector_field.pdf](https://github.com/user-attachments/files/25185813/vector_field.pdf)
 
 
+<img width="1272" height="409" alt="fig1" src="https://github.com/user-attachments/assets/7de22911-f5a6-4237-89cc-bde946212ce1" />
