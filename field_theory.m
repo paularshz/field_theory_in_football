@@ -22,8 +22,7 @@
 %
 % =========================================================================
 
-clear all;
-close all;
+clearvars; close all; clc;
 
 %% 1. GRID INITIALIZATION
 % Define the spatial domain representing the football pitch
@@ -37,9 +36,9 @@ y_edges = linspace(y_min, y_max, M+1);          % Cell edges in Y (21x1)
 [X_grid, Y_grid] = meshgrid(x_edges, y_edges);  % 21x21 grid
 
 % Compute cell centers 
-x_centros = (x_edges(1:end-1) + x_edges(2:end)) / 2; % X centers of cells
-y_centros = (y_edges(1:end-1) + y_edges(2:end)) / 2; % Y centers of cells
-[centroX, centroY] = meshgrid(x_centros, y_centros); % 20x20 grid
+x_centers = (x_edges(1:end-1) + x_edges(2:end)) / 2; % X centers of cells
+y_centers = (y_edges(1:end-1) + y_edges(2:end)) / 2; % Y centers of cells
+[centerX, centerY] = meshgrid(x_centers, y_centers); % 20x20 grid
 
 %% 2. DEFINE VECTOR FIELD (SYNTHETIC DEMO)
 % =========================================================================
@@ -54,12 +53,12 @@ rs = [x_min + offset, (y_max - y_min) / 2]; % Source position (Left)
 rt = [x_max - offset, (y_max - y_min) / 2]; % Sink position (Right)
 
 % B. Calculate vector directions
-Rx_s = centroX - rs(1);
-Ry_s = centroY - rs(2);
+Rx_s = centerX - rs(1);
+Ry_s = centerY - rs(2);
 Rs2  = Rx_s.^2 + Ry_s.^2 + 1e-6; % Avoid division by zero
 
-Rx_t = centroX - rt(1);
-Ry_t = centroY - rt(2);
+Rx_t = centerX - rt(1);
+Ry_t = centerY - rt(2);
 Rt2  = Rx_t.^2 + Ry_t.^2 + 1e-6;
 
 % Superposition of Source and Sink
@@ -67,9 +66,9 @@ Wx_base = (Rx_s ./ Rs2 - Rx_t ./ Rt2);
 Wy_base = (Ry_s ./ Rs2 - Ry_t ./ Rt2);
 
 % Normalize to get pure direction
-norma = sqrt(Wx_base.^2 + Wy_base.^2);
-Wx_dir = Wx_base ./ (norma + eps);
-Wy_dir = Wy_base ./ (norma + eps);
+norm_base = sqrt(Wx_base.^2 + Wy_base.^2);
+Wx_dir = Wx_base ./ (norm_base + eps);
+Wy_dir = Wy_base ./ (norm_base + eps);
 
 % C. Define Velocity
 % We use a displaced Gaussian bell curve to break symmetry for Gauss theorem
@@ -80,7 +79,7 @@ peak_x = 35;  % Velocity peaks at x=35 (not the center)
 width  = 30;  % Width of the velocity bell curve
 
 
-exponent = -((centroX - peak_x).^2) / (2 * width^2);
+exponent = -((centerX - peak_x).^2) / (2 * width^2);
 v_ball = v_min_val + (v_max_val - v_min_val) * exp(exponent);
 
 % D. Apply Magnitude to Direction
@@ -116,7 +115,7 @@ for i = 1:M+1
 end
 
 % Overlay Quiver (Arrows)
-quiver(centroX, centroY, Wx, Wy, 'k');
+quiver(centerX, centerY, Wx, Wy, 'k');
 
 % Overlay football field
 plot_field();
@@ -140,9 +139,9 @@ Wx_null = mag .* cos(theta);                         % x-component with randomiz
 Wy_null = mag .* sin(theta);                         % y-component with randomized direction
 
 % B. Compute Curl
-[curlz, cav] = curl(centroX, centroY, Wx, Wy);       % Curl of original field
+[curlz, cav] = curl(centerX, centerY, Wx, Wy);       % Curl of original field
 mod_curl_W = abs(curlz);                             % Magnitude of curl
-[curlz_null, cav_null] = curl(centroX, centroY, Wx_null, Wy_null); 
+[curlz_null, cav_null] = curl(centerX, centerY, Wx_null, Wy_null); 
 mod_curl_W_null = abs(curlz_null);
 
 % Mean values for comparison
@@ -229,7 +228,7 @@ subplot(1,2,2); caxis([min_value, max_value]);
 h = (X_grid(1,M+1) - X_grid(1,1)) / M;                 % Grid spacing
 
 x_a = 50; y_a = 50;                                    % Center coordinates
-divW = divergence(centroX, centroY, Wx, Wy);           % Divergence of vector field
+divW = divergence(centerX, centerY, Wx, Wy);           % Divergence of vector field
 radios = linspace(0, 50, 20);                          % Radios to evaluate
 
 integrales_div   = zeros(size(radios));                % Divergence integrals
@@ -240,36 +239,36 @@ for r_idx = 1:length(radios)
     R = radios(r_idx);
     
     % 1. Volume Integral (Sum of Divergence inside)
-    mask = ((centroX-x_a).^2 + (centroY-y_a).^2 <= R^2);
+    mask = ((centerX-x_a).^2 + (centerY-y_a).^2 <= R^2);
     integral_div = sum(divW(mask)) * h^2; 
     integrales_div(r_idx) = integral_div;
 
     % 2. Surface Integral (Flux across boundary)
     theta = linspace(0, 2*pi, 100); 
-    x_circulo = x_a + R * cos(theta);
-    y_circulo = y_a + R * sin(theta);
+    x_circ = x_a + R * cos(theta);
+    y_circ = y_a + R * sin(theta);
 
     % Interpolate field at boundary
-    Wx_circulo = interp2(centroX, centroY, Wx, x_circulo, y_circulo, 'linear'); 
-    Wy_circulo = interp2(centroX, centroY, Wy, x_circulo, y_circulo, 'linear'); 
+    Wx_circ = interp2(centerX, centerY, Wx, x_circ, y_circ, 'linear'); 
+    Wy_circ = interp2(centerX, centerY, Wy, x_circ, y_circ, 'linear'); 
 
     % Outward unit normals (radial direction)
-    normales_x = x_circulo - x_a; 
-    normales_y = y_circulo - y_a;  
+    normales_x = x_circ - x_a; 
+    normales_y = y_circ - y_a;  
 
-    norma = sqrt(normales_x.^2 + normales_y.^2); 
+    norm_base = sqrt(normales_x.^2 + normales_y.^2); 
 
-    normales_x = normales_x ./ norma; 
-    normales_y = normales_y ./ norma; 
+    normales_x = normales_x ./ norm_base; 
+    normales_y = normales_y ./ norm_base; 
 
     % Line integral
     flux_contorno = 0;
-    for i = 1:length(x_circulo)-1
-        dx = x_circulo(i+1) - x_circulo(i);
-        dy = y_circulo(i+1) - y_circulo(i);
+    for i = 1:length(x_circ)-1
+        dx = x_circ(i+1) - x_circ(i);
+        dy = y_circ(i+1) - y_circ(i);
         longitud_segmento = sqrt(dx^2 + dy^2);
         
-        flujo_segmento = (Wx_circulo(i) * normales_x(i) + Wy_circulo(i) * normales_y(i)) * longitud_segmento;
+        flujo_segmento = (Wx_circ(i) * normales_x(i) + Wy_circ(i) * normales_y(i)) * longitud_segmento;
         flux_contorno = flux_contorno + flujo_segmento;
     end
 
@@ -331,8 +330,8 @@ hold off;
 for r_idx = 1:length(radios)
     R = radios(r_idx);
     
-    mask = (centroX >= (x_a - R) & centroX <= (x_a + R) & ...
-            centroY >= (y_a - R) & centroY <= (y_a + R));
+    mask = (centerX >= (x_a - R) & centerX <= (x_a + R) & ...
+            centerY >= (y_a - R) & centerY <= (y_a + R));
     
     integral_div = sum(divW(mask)) * h^2; 
     integrales_div(r_idx) = integral_div;
@@ -362,8 +361,8 @@ for r_idx = 1:length(radios)
             normales_x = 0; normales_y = -1;
         end
         % Interpolate vector field on side
-        Wx_segment = interp2(centroX, centroY, Wx, x_points, y_points, 'linear'); 
-        Wy_segment = interp2(centroX, centroY, Wy, x_points, y_points, 'linear'); 
+        Wx_segment = interp2(centerX, centerY, Wx, x_points, y_points, 'linear'); 
+        Wy_segment = interp2(centerX, centerY, Wy, x_points, y_points, 'linear'); 
 
         % Flux per segment (segment length = 2R/N)
         for i = 1:N
@@ -434,8 +433,8 @@ y_min_ext = y_min - h;
 y_max_ext = y_max + h;
 [X, Y] = meshgrid(linspace(x_min_ext, x_max_ext, M+3), linspace(y_min_ext, y_max_ext, M+3));
 
-centroX = (X(1:end-1, 1:end-1) + X(2:end, 2:end)) / 2;
-centroY = (Y(1:end-1, 1:end-1) + Y(2:end, 2:end)) / 2;  
+centerX = (X(1:end-1, 1:end-1) + X(2:end, 2:end)) / 2;
+centerY = (Y(1:end-1, 1:end-1) + Y(2:end, 2:end)) / 2;  
 
 % Extend arrays with zero padding
 Z = padarray(v_ball, [1,1], 0, 'both');
@@ -482,13 +481,13 @@ end
 %% 7. VISUALIZATION: 3D SCALAR POTENTIAL
 fig  = figure;
 
-surf(centroX, centroY, Phi, Phi);     % phi is also used as colormap
+surf(centerX, centerY, Phi, Phi);     % phi is also used as colormap
 shading interp;     
 hold on;
 [Xp, Yp] = meshgrid(0:100, 0:100);
 Zp = zeros(size(Xp)); 
 surf(Xp, Yp, Zp, 'FaceAlpha', 0.2, 'FaceColor', 'k', 'EdgeColor', 'none');  
-contour3(centroX, centroY, Phi, 30, 'k', 'LineWidth', 1);  
+contour3(centerX, centerY, Phi, 30, 'k', 'LineWidth', 1);  
 
 colormap(brewermap(256, 'RdBU'));  
 
